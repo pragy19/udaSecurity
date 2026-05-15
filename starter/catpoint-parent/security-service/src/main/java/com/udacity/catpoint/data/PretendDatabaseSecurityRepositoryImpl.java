@@ -26,6 +26,7 @@ public class PretendDatabaseSecurityRepositoryImpl implements SecurityRepository
 
     private static final Preferences prefs = Preferences.userNodeForPackage(PretendDatabaseSecurityRepositoryImpl.class);
     private static final Gson gson = new Gson(); //used to serialize objects into JSON
+    private static final Type SENSOR_SET_TYPE = new TypeToken<Set<Sensor>>() {}.getType();
 
     public PretendDatabaseSecurityRepositoryImpl() {
         //load system state from prefs, or else default
@@ -38,9 +39,7 @@ public class PretendDatabaseSecurityRepositoryImpl implements SecurityRepository
         if(sensorString == null) {
             sensors = new TreeSet<>();
         } else {
-            Type type = new TypeToken<Set<Sensor>>() {
-            }.getType();
-            sensors = gson.fromJson(sensorString, type);
+            sensors = gson.fromJson(sensorString, SENSOR_SET_TYPE);
         }
     }
 
@@ -77,7 +76,7 @@ public class PretendDatabaseSecurityRepositoryImpl implements SecurityRepository
 
     @Override
     public Set<Sensor> getSensors() {
-        return sensors;
+        return new TreeSet<>(sensors);
     }
 
     @Override

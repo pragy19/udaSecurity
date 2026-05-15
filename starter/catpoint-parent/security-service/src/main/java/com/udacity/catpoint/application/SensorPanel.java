@@ -14,8 +14,6 @@ import javax.swing.*;
  */
 public class SensorPanel extends JPanel {
 
-    private SecurityService securityService;
-
     private JLabel panelLabel = new JLabel("Sensor Management");
     private JLabel newSensorName = new JLabel("Name:");
     private JLabel newSensorType = new JLabel("Sensor Type:");
@@ -29,18 +27,17 @@ public class SensorPanel extends JPanel {
     public SensorPanel(SecurityService securityService) {
         super();
         setLayout(new MigLayout());
-        this.securityService = securityService;
 
         panelLabel.setFont(StyleService.HEADING_FONT);
         addNewSensorButton.addActionListener(e ->
-                addSensor(new Sensor(newSensorNameField.getText(),
+                addSensor(securityService, new Sensor(newSensorNameField.getText(),
                         SensorType.valueOf(newSensorTypeDropdown.getSelectedItem().toString()))));
 
         newSensorPanel = buildAddSensorPanel();
         sensorListPanel = new JPanel();
         sensorListPanel.setLayout(new MigLayout());
 
-        updateSensorList(sensorListPanel);
+        updateSensorList(sensorListPanel, securityService);
 
         add(panelLabel, "wrap");
         add(newSensorPanel, "span");
@@ -66,15 +63,15 @@ public class SensorPanel extends JPanel {
      * will display in the order that they are created.
      * @param p The Panel to populate with the current list of sensors
      */
-    private void updateSensorList(JPanel p) {
+    private void updateSensorList(JPanel p, SecurityService securityService) {
         p.removeAll();
         securityService.getSensors().stream().sorted().forEach(s -> {
             JLabel sensorLabel = new JLabel(String.format("%s(%s): %s", s.getName(),  s.getSensorType().toString(),(s.getActive() ? "Active" : "Inactive")));
             JButton sensorToggleButton = new JButton((s.getActive() ? "Deactivate" : "Activate"));
             JButton sensorRemoveButton = new JButton("Remove Sensor");
 
-            sensorToggleButton.addActionListener(e -> setSensorActivity(s, !s.getActive()) );
-            sensorRemoveButton.addActionListener(e -> removeSensor(s));
+            sensorToggleButton.addActionListener(e -> setSensorActivity(securityService, s, !s.getActive()));
+            sensorRemoveButton.addActionListener(e -> removeSensor(securityService, s));
 
             //hard code some sizes, tsk tsk
             p.add(sensorLabel, "width 300:300:300");
@@ -88,22 +85,24 @@ public class SensorPanel extends JPanel {
 
     /**
      * Asks the securityService to change a sensor activation status and then rebuilds the current sensor list
+     * @param securityService The security service to update
      * @param sensor The sensor to update
      * @param isActive The sensor's activation status
      */
-    private void setSensorActivity(Sensor sensor, Boolean isActive) {
+    private void setSensorActivity(SecurityService securityService, Sensor sensor, Boolean isActive) {
         securityService.changeSensorActivationStatus(sensor, isActive);
-        updateSensorList(sensorListPanel);
+        updateSensorList(sensorListPanel, securityService);
     }
 
     /**
      * Adds a sensor to the securityService and then rebuilds the sensor list
+     * @param securityService The security service to update
      * @param sensor The sensor to add
      */
-    private void addSensor(Sensor sensor) {
+    private void addSensor(SecurityService securityService, Sensor sensor) {
         if(securityService.getSensors().size() < 4) {
             securityService.addSensor(sensor);
-            updateSensorList(sensorListPanel);
+            updateSensorList(sensorListPanel, securityService);
         } else {
             JOptionPane.showMessageDialog(null, "To add more than 4 sensors, please subscribe to our Premium Membership!");
         }
@@ -111,10 +110,11 @@ public class SensorPanel extends JPanel {
 
     /**
      * Remove a sensor from the securityService and then rebuild the sensor list
+     * @param securityService The security service to update
      * @param sensor The sensor to remove
      */
-    private void removeSensor(Sensor sensor) {
+    private void removeSensor(SecurityService securityService, Sensor sensor) {
         securityService.removeSensor(sensor);
-        updateSensorList(sensorListPanel);
+        updateSensorList(sensorListPanel, securityService);
     }
 }

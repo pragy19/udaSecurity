@@ -15,15 +15,28 @@ import javax.swing.*;
  * all our dependencies and providing them to other classes as necessary.
  */
 public class CatpointGui extends JFrame {
-    private SecurityRepository securityRepository = new PretendDatabaseSecurityRepositoryImpl();
-    private FakeImageService imageService = new FakeImageService();
-    private SecurityService securityService = new SecurityService(securityRepository, imageService);
-    private DisplayPanel displayPanel = new DisplayPanel(securityService);
-    private ControlPanel controlPanel = new ControlPanel(securityService);
-    private SensorPanel sensorPanel = new SensorPanel(securityService);
-    private ImagePanel imagePanel = new ImagePanel(securityService);
+    private static final long serialVersionUID = 1L;
+
+    private transient SecurityRepository securityRepository;
+    private transient FakeImageService imageService;
+    private transient SecurityService securityService;
+    private DisplayPanel displayPanel;
+    private ControlPanel controlPanel;
+    private SensorPanel sensorPanel;
+    private ImagePanel imagePanel;
 
     public CatpointGui() {
+        securityRepository = new PretendDatabaseSecurityRepositoryImpl();
+        imageService = new FakeImageService();
+        securityService = new SecurityService(securityRepository, imageService);
+        displayPanel = new DisplayPanel();
+        controlPanel = new ControlPanel(securityService);
+        sensorPanel = new SensorPanel(securityService);
+        imagePanel = new ImagePanel(securityService);
+
+        displayPanel.registerWith(securityService);
+        imagePanel.registerWith(securityService);
+
         setLocation(100, 100);
         setSize(600, 850);
         setTitle("Very Secure App");
@@ -36,7 +49,6 @@ public class CatpointGui extends JFrame {
         mainPanel.add(controlPanel, "wrap");
         mainPanel.add(sensorPanel);
 
-        getContentPane().add(mainPanel);
-
+        super.getContentPane().add(mainPanel);
     }
 }

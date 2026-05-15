@@ -15,11 +15,9 @@ public class DisplayPanel extends JPanel implements StatusListener {
 
     private JLabel currentStatusLabel;
 
-    public DisplayPanel(SecurityService securityService) {
+    public DisplayPanel() {
         super();
         setLayout(new MigLayout());
-
-        securityService.addStatusListener(this);
 
         JLabel panelLabel = new JLabel("Very Secure Home Security");
         JLabel systemStatusLabel = new JLabel("System Status:");
@@ -27,12 +25,14 @@ public class DisplayPanel extends JPanel implements StatusListener {
 
         panelLabel.setFont(StyleService.HEADING_FONT);
 
-        notify(securityService.getAlarmStatus());
-
         add(panelLabel, "span 2, wrap");
         add(systemStatusLabel);
         add(currentStatusLabel, "wrap");
+    }
 
+    public void registerWith(SecurityService securityService) {
+        securityService.addStatusListener(this);
+        notify(securityService.getAlarmStatus());
     }
 
     @Override

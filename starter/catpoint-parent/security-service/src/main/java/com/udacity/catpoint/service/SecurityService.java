@@ -15,14 +15,14 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class SecurityService {
 
-    private ImageService imageService;
-    private SecurityRepository securityRepository;
+    private final ImageService imageService;
+    private final SecurityRepository securityRepository;
     
     /** 
      * FIX 1: SpotBugs often flags HashSets if they aren't thread-safe 
      * when listeners are added/removed during runtime.
      */
-    private Set<StatusListener> statusListeners = Collections.synchronizedSet(new HashSet<>());
+    private final Set<StatusListener> statusListeners = Collections.synchronizedSet(new HashSet<>());
     
     private boolean catDetectedRecently = false;
 

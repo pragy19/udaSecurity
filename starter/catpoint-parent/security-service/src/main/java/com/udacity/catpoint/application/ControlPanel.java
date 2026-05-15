@@ -15,14 +15,12 @@ import java.util.stream.Collectors;
  */
 public class ControlPanel extends JPanel {
 
-    private SecurityService securityService;
     private Map<ArmingStatus, JButton> buttonMap;
-
 
     public ControlPanel(SecurityService securityService) {
         super();
         setLayout(new MigLayout());
-        this.securityService = securityService;
+        final SecurityService service = securityService;
 
         JLabel panelLabel = new JLabel("System Control");
         panelLabel.setFont(StyleService.HEADING_FONT);
@@ -36,7 +34,7 @@ public class ControlPanel extends JPanel {
         //add an action listener to each button that applies its arming status and recolors all the buttons
         buttonMap.forEach((k, v) -> {
             v.addActionListener(e -> {
-                securityService.setArmingStatus(k);
+                service.setArmingStatus(k);
                 buttonMap.forEach((status, button) -> button.setBackground(status == k ? status.getColor() : null));
             });
         });
@@ -44,9 +42,7 @@ public class ControlPanel extends JPanel {
         //map order above is arbitrary, so loop again in order to add buttons in enum-order
         Arrays.stream(ArmingStatus.values()).forEach(status -> add(buttonMap.get(status)));
 
-        ArmingStatus currentStatus = securityService.getArmingStatus();
+        ArmingStatus currentStatus = service.getArmingStatus();
         buttonMap.get(currentStatus).setBackground(currentStatus.getColor());
-
-
     }
 }

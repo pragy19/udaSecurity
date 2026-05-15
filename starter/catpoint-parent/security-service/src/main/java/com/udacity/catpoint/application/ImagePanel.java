@@ -16,11 +16,10 @@ import java.io.IOException;
  * by uploading their own picture, and 'scan' the picture, sending it for image analysis
  */
 public class ImagePanel extends JPanel implements StatusListener {
-    private SecurityService securityService;
 
     private JLabel cameraHeader;
     private JLabel cameraLabel;
-    private BufferedImage currentCameraImage;
+    private transient BufferedImage currentCameraImage;
 
     private int IMAGE_WIDTH = 300;
     private int IMAGE_HEIGHT = 225;
@@ -28,8 +27,8 @@ public class ImagePanel extends JPanel implements StatusListener {
     public ImagePanel(SecurityService securityService) {
         super();
         setLayout(new MigLayout());
-        this.securityService = securityService;
-        securityService.addStatusListener(this);
+
+        final SecurityService service = securityService;
 
         cameraHeader = new JLabel("Camera Feed");
         cameraHeader.setFont(StyleService.HEADING_FONT);
@@ -53,22 +52,25 @@ public class ImagePanel extends JPanel implements StatusListener {
                 currentCameraImage = ImageIO.read(chooser.getSelectedFile());
                 Image tmp = new ImageIcon(currentCameraImage).getImage();
                 cameraLabel.setIcon(new ImageIcon(tmp.getScaledInstance(IMAGE_WIDTH, IMAGE_HEIGHT, Image.SCALE_SMOOTH)));
-            } catch (IOException |NullPointerException ioe) {
+                cameraLabel.revalidate();
+                cameraLabel.repaint();
+            } catch (IOException | NullPointerException ioe) {
                 JOptionPane.showMessageDialog(null, "Invalid image selected.");
             }
-            repaint();
         });
 
         //button that sends the image to the image service
         JButton scanPictureButton = new JButton("Scan Picture");
-        scanPictureButton.addActionListener(e -> {
-            securityService.processImage(currentCameraImage);
-        });
+        scanPictureButton.addActionListener(e -> service.processImage(currentCameraImage));
 
         add(cameraHeader, "span 3, wrap");
         add(cameraLabel, "span 3, wrap");
         add(addPictureButton);
         add(scanPictureButton);
+    }
+
+    public void registerWith(SecurityService securityService) {
+        securityService.addStatusListener(this);
     }
 
     @Override
